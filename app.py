@@ -13,11 +13,6 @@ PATH_DIAGRAM_UPLOADS = PATH_DIAGRAM_GURU_PROJECT + '/uploads/'
 app = Flask(__name__)
 # redis = Redis(host='redis', port=6379)
 
-@app.route('/api/v1/recognizer2', methods=['POST')
-def recognize():
-    reader = easyocr.Reader(['ch_sim','en']) 
-    result = reader.readtext('chinese.jpg')
-
 
 @app.route('/api/v1/recognizer', methods=['POST'])
 def upload():
