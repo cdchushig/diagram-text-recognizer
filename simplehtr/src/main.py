@@ -133,6 +133,22 @@ def infer(model: Model, fn_img: Path) -> None:
     print(f'Probability: {probability[0]}')
 
 
+def infer_textline(img):
+    decoder_mapping = {'bestpath': DecoderType.BestPath,
+                       'beamsearch': DecoderType.BeamSearch,
+                       'wordbeamsearch': DecoderType.WordBeamSearch}
+    decoder_type = decoder_mapping['bestpath']
+    model = Model(list(open(FilePaths.fn_char_list).read()), decoder_type, must_restore=True, dump=False)
+
+    preprocessor = Preprocessor(get_img_size(), dynamic_width=True, padding=16)
+    img = preprocessor.process_img(img)
+
+    batch = Batch([img], None, 1)
+    recognized, probability = model.infer_batch(batch, True)
+    print(f'Recognized: "{recognized[0]}"')
+    print(f'Probability: {probability[0]}')
+
+
 def main():
     """Main function."""
     parser = argparse.ArgumentParser()

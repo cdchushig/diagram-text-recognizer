@@ -1,6 +1,8 @@
 import argparse
 import cv2
 import easyocr
+from simplehtr.src.main import infer_textline
+
 
 def parse_arguments(parser):
     parser = argparse.ArgumentParser()
@@ -10,21 +12,14 @@ def parse_arguments(parser):
     args = parser.parse_args()
     return args
 
+
 def main(args):
     reader = easyocr.Reader(['en', 'es'])
-    result = reader.readtext('data/test01.jpg')
-    print(result)
+    result, img, img_cv_grey = reader.readtext('data/test02.jpg')
+    for aux_text in result:
+        print(aux_text)
+        infer_textline(img)
 
-# img = cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE)
-# assert img is not None
-#
-# preprocessor = Preprocessor(get_img_size(), dynamic_width=True, padding=16)
-# img = preprocessor.process_img(img)
-#
-# batch = Batch([img], None, 1)
-# recognized, probability = model.infer_batch(batch, True)
-# print(f'Recognized: "{recognized[0]}"')
-# print(f'Probability: {probability[0]}')
 
 if __name__ == '__main__':
 
