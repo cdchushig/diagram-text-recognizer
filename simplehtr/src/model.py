@@ -5,10 +5,13 @@ from typing import List, Tuple
 import numpy as np
 import tensorflow as tf
 
-from dataloader_iam import Batch
+from .dataloader_iam import Batch
 
 # Disable eager mode
 tf.compat.v1.disable_eager_execution()
+
+from path import Path
+PATH_SIMPLEHTR_MODEL = str(Path.getcwd()) + '/simplehtr/model/'
 
 
 class DecoderType:
@@ -153,7 +156,8 @@ class Model:
         sess = tf.compat.v1.Session()  # TF session
 
         saver = tf.compat.v1.train.Saver(max_to_keep=1)  # saver saves model to file
-        model_dir = '../model/'
+        # model_dir = '../model/'
+        model_dir = PATH_SIMPLEHTR_MODEL
         latest_snapshot = tf.train.latest_checkpoint(model_dir)  # is there a saved model?
 
         # if model must be restored (for inference), there must be a snapshot

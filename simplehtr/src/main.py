@@ -6,14 +6,19 @@ import cv2
 import editdistance
 from path import Path
 
-from dataloader_iam import DataLoaderIAM, Batch
-from model import Model, DecoderType
-from preprocessor import Preprocessor
+from .dataloader_iam import DataLoaderIAM, Batch
+from .model import Model, DecoderType
+from .preprocessor import Preprocessor
+
+PATH_SIMPLEHTR_MODEL = str(Path.getcwd()) + '/simplehtr/model/charList.txt'
+
+# PATH_SIMPLEHTR_DATA = Path.getcwd() + '/simplehtr/data/'
 
 
 class FilePaths:
     """Filenames and paths to data."""
-    fn_char_list = '../model/charList.txt'
+    fn_char_list = PATH_SIMPLEHTR_MODEL
+    # fn_char_list = './model/charList.txt'
     fn_summary = '../model/summary.json'
     fn_corpus = '../data/corpus.txt'
 
@@ -133,12 +138,7 @@ def infer(model: Model, fn_img: Path) -> None:
     print(f'Probability: {probability[0]}')
 
 
-def infer_textline(img):
-    decoder_mapping = {'bestpath': DecoderType.BestPath,
-                       'beamsearch': DecoderType.BeamSearch,
-                       'wordbeamsearch': DecoderType.WordBeamSearch}
-    decoder_type = decoder_mapping['bestpath']
-    model = Model(list(open(FilePaths.fn_char_list).read()), decoder_type, must_restore=True, dump=False)
+def infer_textline(model, img):
 
     preprocessor = Preprocessor(get_img_size(), dynamic_width=True, padding=16)
     img = preprocessor.process_img(img)
@@ -147,6 +147,30 @@ def infer_textline(img):
     recognized, probability = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
     print(f'Probability: {probability[0]}')
+
+
+def main2(img):
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--mode', choices=['train', 'validate', 'infer'], default='infer')
+    parser.add_argument('--decoder', choices=['bestpath', 'beamsearch', 'wordbeamsearch'], default='bestpath')
+    parser.add_argument('--batch_size', help='Batch size.', type=int, default=100)
+    parser.add_argument('--data_dir', help='Directory containing IAM dataset.', type=Path, required=False)
+    parser.add_argument('--fast', help='Load samples from LMDB.', action='store_true')
+    parser.add_argument('--line_mode', help='Train to read text lines instead of single words.', action='store_true')
+    parser.add_argument('--img_file', help='Image used for inference.', type=Path, default='../data/word.png')
+    parser.add_argument('--early_stopping', help='Early stopping epochs.', type=int, default=25)
+    parser.add_argument('--dump', help='Dump output of NN to CSV file(s).', action='store_true')
+    args = parser.parse_args()
+
+    # set chosen CTC decoder
+    decoder_mapping = {'bestpath': DecoderType.BestPath,
+                       'beamsearch': DecoderType.BeamSearch,
+                       'wordbeamsearch': DecoderType.WordBeamSearch}
+    decoder_type = decoder_mapping[args.decoder]
+
+    model = Model(list(open(FilePaths.fn_char_list).read()), decoder_type, must_restore=True, dump=args.dump)
+    infer_textline(model, img)
 
 
 def main():
@@ -200,5 +224,5 @@ def main():
         infer(model, args.img_file)
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
